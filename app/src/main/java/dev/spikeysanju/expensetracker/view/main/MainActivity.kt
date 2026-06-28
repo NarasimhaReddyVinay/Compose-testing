@@ -1,106 +1,62 @@
 package dev.spikeysanju.expensetracker.view.main
 
 import android.os.Bundle
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
-import dev.spikeysanju.expensetracker.R
-import dev.spikeysanju.expensetracker.data.local.datastore.UIModeImpl
-import dev.spikeysanju.expensetracker.databinding.ActivityMainBinding
-import dev.spikeysanju.expensetracker.repo.TransactionRepo
-import dev.spikeysanju.expensetracker.services.exportcsv.ExportCsvService
+import dev.spikeysanju.expensetracker.ui.screens.AddTransactionScreen
+import dev.spikeysanju.expensetracker.ui.screens.DashboardScreen
+import dev.spikeysanju.expensetracker.ui.screens.EditTransactionScreen
+import dev.spikeysanju.expensetracker.ui.screens.TransactionDetailsScreen
+import dev.spikeysanju.expensetracker.ui.screens.AboutScreen
+import dev.spikeysanju.expensetracker.ui.theme.ExpenseTrackerTheme
 import dev.spikeysanju.expensetracker.view.main.viewmodel.TransactionViewModel
-import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
-    private lateinit var navHostFragment: NavHostFragment
-    private lateinit var appBarConfiguration: AppBarConfiguration
-
-    @Inject
-    lateinit var repo: TransactionRepo
-    @Inject
-    lateinit var exportCsvService: ExportCsvService
-    @Inject
-    lateinit var themeManager: UIModeImpl
-    private val viewModel: TransactionViewModel by viewModels()
+class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContent {
+            val viewModel: TransactionViewModel = viewModel()
+            val isDarkMode by viewModel.getUIMode.collectAsState(initial = false)
 
-        /**
-         * Just so the viewModel doesn't get removed by the compiler, as it isn't used
-         * anywhere here for now
-         */
-        viewModel
-
-        initViews(binding)
-        observeThemeMode()
-        observeNavElements(binding, navHostFragment.navController)
-    }
-
-    private fun observeThemeMode() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.getUIMode.collect {
-                    val mode = when (it) {
-                        true -> AppCompatDelegate.MODE_NIGHT_YES
-                        false -> AppCompatDelegate.MODE_NIGHT_NO
+            ExpenseTrackerTheme(darkTheme = isDarkMode) {
+                val navController = rememberNavController()
+                NavHost(navController = navController, startDestination = "dashboard") {
+                    composable("dashboard") {
+                        DashboardScreen(navController, viewModel)
                     }
-                    AppCompatDelegate.setDefaultNightMode(mode)
+                    composable("add_transaction") {
+                        AddTransactionScreen(navController, viewModel)
+                    }
+                    composable(
+                        "details/{transactionId}",
+                        arguments = listOf(navArgument("transactionId") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val id = backStackEntry.arguments?.getInt("transactionId") ?: return@composable
+                        TransactionDetailsScreen(navController, viewModel, id)
+                    }
+                    composable(
+                        "edit_transaction/{transactionId}",
+                        arguments = listOf(navArgument("transactionId") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val id = backStackEntry.arguments?.getInt("transactionId") ?: return@composable
+                        EditTransactionScreen(navController, viewModel, id)
+                    }
+                    composable("about") {
+                        AboutScreen(navController)
+                    }
                 }
             }
         }
-    }
-
-    private fun observeNavElements(
-        binding: ActivityMainBinding,
-        navController: NavController
-    ) {
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            when (destination.id) {
-
-                R.id.dashboardFragment -> {
-                    supportActionBar!!.setDisplayShowTitleEnabled(false)
-                }
-                R.id.addTransactionFragment -> {
-                    supportActionBar!!.setDisplayShowTitleEnabled(true)
-                    binding.toolbar.title = getString(R.string.text_add_transaction)
-                }
-                else -> {
-                    supportActionBar!!.setDisplayShowTitleEnabled(true)
-                }
-            }
-        }
-    }
-
-    private fun initViews(binding: ActivityMainBinding) {
-        setSupportActionBar(binding.toolbar)
-        supportActionBar!!.setDisplayShowTitleEnabled(false)
-
-        navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment?
-            ?: return
-
-        with(navHostFragment.navController) {
-            appBarConfiguration = AppBarConfiguration(graph)
-            setupActionBarWithNavController(this, appBarConfiguration)
-        }
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        navHostFragment.navController.navigateUp()
-        return super.onSupportNavigateUp()
     }
 }

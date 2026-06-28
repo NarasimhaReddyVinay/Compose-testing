@@ -1,0 +1,110 @@
+package dev.spikeysanju.expensetracker.ui.screens
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import dev.spikeysanju.expensetracker.model.Transaction
+import dev.spikeysanju.expensetracker.utils.viewState.ViewState
+import dev.spikeysanju.expensetracker.view.dashboard.components.AnalyticsChart
+import dev.spikeysanju.expensetracker.view.dashboard.components.ChartData
+import dev.spikeysanju.expensetracker.view.main.viewmodel.TransactionViewModel
+
+import androidx.compose.material.icons.filled.Info
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DashboardScreen(navController: NavController, viewModel: TransactionViewModel) {
+    val uiState by viewModel.uiState.collectAsState()
+    val filter by viewModel.transactionFilter.collectAsState()
+
+    LaunchedEffect(filter) {
+        viewModel.getAllTransaction(filter)
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Expense Tracker") },
+                actions = {
+                    IconButton(onClick = { navController.navigate("about") }) {
+                        Icon(Icons.Default.Info, contentDescription = "About")
+                    }
+                }
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { navController.navigate("add_transaction") }) {
+                Icon(Icons.Default.Add, contentDescription = "Add")
+            }
+        }
+    ) { padding ->
+        Column(modifier = Modifier.padding(padding)) {
+            when (val state = uiState) {
+                is ViewState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                is ViewState.Empty -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No transactions yet") }
+                is ViewState.Success -> {
+                    val transactions = state.data
+                    val (income, expense) = transactions.partition { it.transactionType == "Income" }
+                    val totalIncome = income.sumOf { it.amount }.toFloat()
+                    val totalExpense = expense.sumOf { it.amount }.toFloat()
+
+                    AnalyticsChart(
+                        data = listOf(
+                            ChartData(Color(0xFF4CAF50), totalIncome, "Income"),
+                            ChartData(Color(0xFFF44336), totalExpense, "Expense")
+                        ),
+                        modifier = Modifier.height(300.dp)
+                    )
+
+                    LazyColumn {
+                        items(transactions) { transaction ->
+                            TransactionItem(transaction) {
+                                navController.navigate("details/${transaction.id}")
+                            }
+                        }
+                    }
+                }
+                is ViewState.Error -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Error loading transactions") }
+            }
+        }
+    }
+}
+
+@Composable
+fun TransactionItem(transaction: Transaction, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable { onClick() }
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(text = transaction.title, fontWeight = FontWeight.Bold)
+                Text(text = transaction.tag, style = MaterialTheme.typography.bodySmall)
+            }
+            Text(
+                text = "₹${transaction.amount}",
+                color = if (transaction.transactionType == "Income") Color(0xFF4CAF50) else Color(0xFFF44336)
+            )
+        }
+    }
+}
