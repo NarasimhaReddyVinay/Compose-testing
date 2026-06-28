@@ -18,6 +18,8 @@ import android.widget.Spinner
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.widget.NestedScrollView
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -38,6 +40,8 @@ import dev.spikeysanju.expensetracker.utils.viewState.ExportState
 import dev.spikeysanju.expensetracker.utils.viewState.ViewState
 import dev.spikeysanju.expensetracker.view.adapter.TransactionAdapter
 import dev.spikeysanju.expensetracker.view.base.BaseFragment
+import dev.spikeysanju.expensetracker.view.dashboard.components.AnalyticsChart
+import dev.spikeysanju.expensetracker.view.dashboard.components.ChartData
 import dev.spikeysanju.expensetracker.view.main.viewmodel.TransactionViewModel
 import hide
 import indianRupee
@@ -181,6 +185,17 @@ class DashboardFragment :
         incomeCardView.total.text = "+ ".plus(indianRupee(income))
         expenseCardView.total.text = "- ".plus(indianRupee(expense))
         totalBalanceView.totalBalance.text = indianRupee(income - expense)
+
+        // Update Analytics Chart
+        analyticsComposeView.setContent {
+            MaterialTheme {
+                val chartData = listOf(
+                    ChartData(Color(0xFF4CAF50), income.toFloat(), "Income"),
+                    ChartData(Color(0xFFF44336), expense.toFloat(), "Expense")
+                )
+                AnalyticsChart(data = chartData)
+            }
+        }
     }
 
     private fun observeTransaction() {
