@@ -28,12 +28,6 @@ class AboutFragment : BaseFragment<FragmentAboutBinding, AboutViewModel>() {
             BuildConfig.VERSION_CODE
         )
 
-        license.setOnClickListener {
-            viewModel.launchLicense().run {
-                launchBrowser(viewModel.url.value)
-            }
-        }
-
         visitURL.setOnClickListener {
             viewModel.launchRepository().run {
                 launchBrowser(viewModel.url.value)

@@ -48,42 +48,16 @@
 
 
         <TextView
-            android:id="@+id/licenseTitle"
+            android:id="@+id/visitTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/dimen_16"
             android:layout_marginTop="@dimen/dimen_48"
             android:fontFamily="@font/open_sans_bold"
-            android:text="@string/text_about_license_title"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Overline"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/appVersion" />
-
-
-        <TextView
-            android:id="@+id/license"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/dimen_16"
-            android:layout_marginTop="@dimen/dimen_12"
-            android:fontFamily="@font/open_sans_regular"
-            android:text="@string/text_about_license"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/licenseTitle" />
-
-
-        <TextView
-            android:id="@+id/visitTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/dimen_16"
-            android:layout_marginTop="@dimen/dimen_32"
-            android:fontFamily="@font/open_sans_bold"
             android:text="@string/text_about_visit_title"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Overline"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/license" />
+            app:layout_constraintTop_toBottomOf="@id/appVersion" />
 
 
         <TextView

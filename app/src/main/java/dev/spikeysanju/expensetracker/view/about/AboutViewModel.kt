@@ -11,10 +11,6 @@ class AboutViewModel @Inject constructor() : ViewModel() {
     private val _url = MutableStateFlow("https://github.com/Spikeysanju/Expenso")
     val url: StateFlow<String> = _url
 
-    fun launchLicense() {
-        _url.value = "https://github.com/Spikeysanju/Expenso/blob/master/LICENSE"
-    }
-
     fun launchRepository() {
         _url.value = "https://github.com/Spikeysanju/Expenso"
     }
