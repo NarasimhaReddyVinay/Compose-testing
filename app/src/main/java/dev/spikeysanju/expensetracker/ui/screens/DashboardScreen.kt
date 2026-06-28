@@ -1,16 +1,18 @@
 package dev.spikeysanju.expensetracker.ui.screens
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,8 +24,6 @@ import dev.spikeysanju.expensetracker.utils.viewState.ViewState
 import dev.spikeysanju.expensetracker.view.dashboard.components.AnalyticsChart
 import dev.spikeysanju.expensetracker.view.dashboard.components.ChartData
 import dev.spikeysanju.expensetracker.view.main.viewmodel.TransactionViewModel
-
-import androidx.compose.material.icons.filled.Info
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,11 +70,26 @@ fun DashboardScreen(navController: NavController, viewModel: TransactionViewMode
                         modifier = Modifier.height(300.dp)
                     )
 
-                    LazyColumn {
-                        items(transactions) { transaction ->
-                            TransactionItem(transaction) {
-                                navController.navigate("details/${transaction.id}")
-                            }
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 80.dp)
+                    ) {
+                        items(
+                            items = transactions,
+                            key = { it.id ?: it.hashCode() }
+                        ) { transaction ->
+                            SwipeToActionItem(
+                                transaction = transaction,
+                                onDismissedToStart = {
+                                    viewModel.deleteTransaction(transaction)
+                                },
+                                onDismissedToEnd = {
+                                    navController.navigate("edit_transaction/${transaction.id}")
+                                },
+                                onClick = {
+                                    navController.navigate("details/${transaction.id}")
+                                }
+                            )
                         }
                     }
                 }
@@ -84,12 +99,82 @@ fun DashboardScreen(navController: NavController, viewModel: TransactionViewMode
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SwipeToActionItem(
+    transaction: Transaction,
+    onDismissedToStart: () -> Unit,
+    onDismissedToEnd: () -> Unit,
+    onClick: () -> Unit
+) {
+    val dismissState = rememberDismissState(
+        confirmValueChange = {
+            when (it) {
+                DismissValue.DismissedToStart -> {
+                    onDismissedToStart()
+                    true
+                }
+                DismissValue.DismissedToEnd -> {
+                    onDismissedToEnd()
+                    false // Don't dismiss, we are navigating
+                }
+                else -> false
+            }
+        }
+    )
+
+    SwipeToDismiss(
+        state = dismissState,
+        background = {
+            val direction = dismissState.dismissDirection
+            val color by animateColorAsState(
+                when (dismissState.targetValue) {
+                    DismissValue.Default -> Color.LightGray
+                    DismissValue.DismissedToEnd -> Color(0xFF2196F3) // Edit Blue
+                    DismissValue.DismissedToStart -> Color(0xFFF44336) // Delete Red
+                }, label = "background"
+            )
+
+            val alignment = when (direction) {
+                DismissDirection.StartToEnd -> Alignment.CenterStart
+                DismissDirection.EndToStart -> Alignment.CenterEnd
+                else -> Alignment.Center
+            }
+
+            val icon = when (direction) {
+                DismissDirection.StartToEnd -> Icons.Default.Edit
+                DismissDirection.EndToStart -> Icons.Default.Delete
+                else -> null
+            }
+
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(color)
+                    .padding(horizontal = 20.dp),
+                contentAlignment = alignment
+            ) {
+                if (icon != null) {
+                    Icon(
+                        icon,
+                        contentDescription = if (direction == DismissDirection.StartToEnd) "Edit" else "Delete",
+                        tint = Color.White
+                    )
+                }
+            }
+        },
+        dismissContent = {
+            TransactionItem(transaction, onClick)
+        }
+    )
+}
+
 @Composable
 fun TransactionItem(transaction: Transaction, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
             .clickable { onClick() }
     ) {
         Row(
