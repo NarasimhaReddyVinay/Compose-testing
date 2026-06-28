@@ -39,12 +39,12 @@ class TransactionViewModel @Inject constructor(
     private val _transactionFilter = MutableStateFlow("Overall")
     val transactionFilter: StateFlow<String> = _transactionFilter
 
-    private val _uiState = MutableStateFlow<ViewState>(ViewState.Loading)
-    private val _detailState = MutableStateFlow<DetailState>(DetailState.Loading)
+    private val _uiState = MutableStateFlow<ViewState<List<Transaction>>>(ViewState.Loading)
+    private val _detailState = MutableStateFlow<ViewState<Transaction>>(ViewState.Loading)
 
     // UI collect from this stateFlow to get the state updates
-    val uiState: StateFlow<ViewState> = _uiState
-    val detailState: StateFlow<DetailState> = _detailState
+    val uiState: StateFlow<ViewState<List<Transaction>>> = _uiState
+    val detailState: StateFlow<ViewState<Transaction>> = _detailState
 
     // get ui mode
     val getUIMode = uiModeDataStore.uiMode
@@ -100,10 +100,12 @@ class TransactionViewModel @Inject constructor(
 
     // get transaction by id
     fun getByID(id: Int) = viewModelScope.launch {
-        _detailState.value = DetailState.Loading
+        _detailState.value = ViewState.Loading
         transactionRepo.getByID(id).collect { result: Transaction? ->
             if (result != null) {
-                _detailState.value = DetailState.Success(result)
+                _detailState.value = ViewState.Success(result)
+            } else {
+                _detailState.value = ViewState.Empty
             }
         }
     }

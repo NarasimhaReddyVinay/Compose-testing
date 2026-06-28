@@ -27,7 +27,7 @@ import dev.spikeysanju.expensetracker.R
 import dev.spikeysanju.expensetracker.databinding.FragmentTransactionDetailsBinding
 import dev.spikeysanju.expensetracker.model.Transaction
 import dev.spikeysanju.expensetracker.utils.saveBitmap
-import dev.spikeysanju.expensetracker.utils.viewState.DetailState
+import dev.spikeysanju.expensetracker.utils.viewState.ViewState
 import dev.spikeysanju.expensetracker.view.base.BaseFragment
 import dev.spikeysanju.expensetracker.view.main.viewmodel.TransactionViewModel
 import hide
@@ -78,17 +78,17 @@ class TransactionDetailsFragment : BaseFragment<FragmentTransactionDetailsBindin
                 viewModel.detailState.collect { detailState ->
 
                     when (detailState) {
-                        DetailState.Loading -> {
+                        ViewState.Loading -> {
                         }
-                        is DetailState.Success -> {
-                            onDetailsLoaded(detailState.transaction)
+                        is ViewState.Success -> {
+                            onDetailsLoaded(detailState.data)
                         }
-                        is DetailState.Error -> {
+                        is ViewState.Error -> {
                             binding.root.snack(
                                 string = R.string.text_error
                             )
                         }
-                        DetailState.Empty -> {
+                        ViewState.Empty -> {
                             findNavController().navigateUp()
                         }
                     }

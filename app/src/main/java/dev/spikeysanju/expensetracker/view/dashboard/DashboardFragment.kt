@@ -192,8 +192,8 @@ class DashboardFragment :
                         }
                         is ViewState.Success -> {
                             showAllViews()
-                            onTransactionLoaded(uiState.transaction)
-                            onTotalTransactionLoaded(uiState.transaction)
+                            onTransactionLoaded(uiState.data)
+                            onTotalTransactionLoaded(uiState.data)
                         }
                         is ViewState.Error -> {
                             binding.root.snack(
