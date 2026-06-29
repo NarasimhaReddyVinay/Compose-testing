@@ -8,9 +8,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +32,7 @@ import dev.spikeysanju.expensetracker.view.main.viewmodel.TransactionViewModel
 fun DashboardScreen(navController: NavController, viewModel: TransactionViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val filter by viewModel.transactionFilter.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
     LaunchedEffect(filter) {
         viewModel.getAllTransaction(filter)
@@ -53,6 +56,26 @@ fun DashboardScreen(navController: NavController, viewModel: TransactionViewMode
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
+            // Search Bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.searchTransactions(it) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                placeholder = { Text("Search transactions...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.searchTransactions("") }) {
+                            Icon(Icons.Default.Clear, contentDescription = "Clear")
+                        }
+                    }
+                },
+                singleLine = true,
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+            )
+
             when (val state = uiState) {
                 is ViewState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 is ViewState.Empty -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No transactions yet") }
@@ -76,7 +99,7 @@ fun DashboardScreen(navController: NavController, viewModel: TransactionViewMode
                     ) {
                         items(
                             items = transactions,
-                            key = { it.id ?: it.hashCode() }
+                            key = { it.id }
                         ) { transaction ->
                             SwipeToActionItem(
                                 transaction = transaction,
@@ -107,14 +130,14 @@ fun SwipeToActionItem(
     onDismissedToEnd: () -> Unit,
     onClick: () -> Unit
 ) {
-    val dismissState = rememberDismissState(
+    val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = {
             when (it) {
-                DismissValue.DismissedToStart -> {
+                SwipeToDismissBoxValue.EndToStart -> {
                     onDismissedToStart()
                     true
                 }
-                DismissValue.DismissedToEnd -> {
+                SwipeToDismissBoxValue.StartToEnd -> {
                     onDismissedToEnd()
                     false // Don't dismiss, we are navigating
                 }
@@ -123,27 +146,27 @@ fun SwipeToActionItem(
         }
     )
 
-    SwipeToDismiss(
+    SwipeToDismissBox(
         state = dismissState,
-        background = {
+        backgroundContent = {
             val direction = dismissState.dismissDirection
             val color by animateColorAsState(
                 when (dismissState.targetValue) {
-                    DismissValue.Default -> Color.LightGray
-                    DismissValue.DismissedToEnd -> Color(0xFF2196F3) // Edit Blue
-                    DismissValue.DismissedToStart -> Color(0xFFF44336) // Delete Red
+                    SwipeToDismissBoxValue.Settled -> Color.LightGray
+                    SwipeToDismissBoxValue.StartToEnd -> Color(0xFF2196F3) // Edit Blue
+                    SwipeToDismissBoxValue.EndToStart -> Color(0xFFF44336) // Delete Red
                 }, label = "background"
             )
 
             val alignment = when (direction) {
-                DismissDirection.StartToEnd -> Alignment.CenterStart
-                DismissDirection.EndToStart -> Alignment.CenterEnd
+                SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+                SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
                 else -> Alignment.Center
             }
 
             val icon = when (direction) {
-                DismissDirection.StartToEnd -> Icons.Default.Edit
-                DismissDirection.EndToStart -> Icons.Default.Delete
+                SwipeToDismissBoxValue.StartToEnd -> Icons.Default.Edit
+                SwipeToDismissBoxValue.EndToStart -> Icons.Default.Delete
                 else -> null
             }
 
@@ -157,16 +180,15 @@ fun SwipeToActionItem(
                 if (icon != null) {
                     Icon(
                         icon,
-                        contentDescription = if (direction == DismissDirection.StartToEnd) "Edit" else "Delete",
+                        contentDescription = if (direction == SwipeToDismissBoxValue.StartToEnd) "Edit" else "Delete",
                         tint = Color.White
                     )
                 }
             }
-        },
-        dismissContent = {
-            TransactionItem(transaction, onClick)
         }
-    )
+    ) {
+        TransactionItem(transaction, onClick)
+    }
 }
 
 @Composable

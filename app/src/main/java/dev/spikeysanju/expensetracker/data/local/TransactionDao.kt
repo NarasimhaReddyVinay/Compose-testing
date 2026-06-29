@@ -34,4 +34,12 @@ interface TransactionDao {
     // delete transaction by id
     @Query("DELETE FROM all_transactions WHERE id = :id")
     suspend fun deleteTransactionByID(id: Int)
+
+    // Search transactions by title
+    @Query("SELECT * FROM all_transactions WHERE title LIKE '%' || :query || '%' ORDER by createdAt DESC")
+    fun searchTransactions(query: String): Flow<List<Transaction>>
+
+    // Filter by date range
+    @Query("SELECT * FROM all_transactions WHERE createdAt BETWEEN :startDate AND :endDate ORDER by createdAt DESC")
+    fun getTransactionsByDateRange(startDate: Long, endDate: Long): Flow<List<Transaction>>
 }

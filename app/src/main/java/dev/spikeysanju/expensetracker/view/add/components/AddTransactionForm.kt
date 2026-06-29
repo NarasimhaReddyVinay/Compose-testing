@@ -11,14 +11,20 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionForm(
+    initialTitle: String = "",
+    initialAmount: String = "",
+    initialType: String = "Income",
+    initialTag: String = "Food",
+    initialDate: String = "",
+    initialNote: String = "",
     onSave: (title: String, amount: String, type: String, tag: String, date: String, note: String) -> Unit
 ) {
-    var title by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
-    var type by remember { mutableStateOf("Income") }
-    var tag by remember { mutableStateOf("Food") }
-    var date by remember { mutableStateOf("") }
-    var note by remember { mutableStateOf("") }
+    var title by remember(initialTitle) { mutableStateOf(initialTitle) }
+    var amount by remember(initialAmount) { mutableStateOf(initialAmount) }
+    var type by remember(initialType) { mutableStateOf(initialType) }
+    var tag by remember(initialTag) { mutableStateOf(initialTag) }
+    var date by remember(initialDate) { mutableStateOf(initialDate) }
+    var note by remember(initialNote) { mutableStateOf(initialNote) }
 
     Column(
         modifier = Modifier

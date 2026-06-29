@@ -21,6 +21,10 @@ data class Transaction(
     var date: String,
     @ColumnInfo(name = "note")
     var note: String,
+    @ColumnInfo(name = "frequency")
+    var frequency: String = "Once", // Once, Daily, Weekly, Monthly
+    @ColumnInfo(name = "currencyCode")
+    var currencyCode: String = "INR",
     @ColumnInfo(name = "createdAt")
     var createdAt: Long =
         System.currentTimeMillis(),

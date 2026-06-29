@@ -6,18 +6,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.spikeysanju.expensetracker.data.local.datastore.UIModeImpl
+import dev.spikeysanju.expensetracker.model.Budget
 import dev.spikeysanju.expensetracker.model.Transaction
 import dev.spikeysanju.expensetracker.repo.TransactionRepo
 import dev.spikeysanju.expensetracker.services.exportcsv.ExportCsvService
 import dev.spikeysanju.expensetracker.services.exportcsv.toCsv
 import dev.spikeysanju.expensetracker.utils.viewState.ExportState
 import dev.spikeysanju.expensetracker.utils.viewState.ViewState
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -38,12 +38,22 @@ class TransactionViewModel @Inject constructor(
     private val _transactionFilter = MutableStateFlow("Overall")
     val transactionFilter: StateFlow<String> = _transactionFilter
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
     private val _uiState = MutableStateFlow<ViewState<List<Transaction>>>(ViewState.Loading)
     private val _detailState = MutableStateFlow<ViewState<Transaction>>(ViewState.Loading)
 
     // UI collect from this stateFlow to get the state updates
     val uiState: StateFlow<ViewState<List<Transaction>>> = _uiState
     val detailState: StateFlow<ViewState<Transaction>> = _detailState
+
+    // Budget operations
+    val getBudget = transactionRepo.getBudget()
+
+    fun setBudget(amount: Double) = viewModelScope.launch {
+        transactionRepo.setBudget(Budget(amount = amount))
+    }
 
     // get ui mode
     val getUIMode = uiModeDataStore.uiMode
@@ -56,11 +66,12 @@ class TransactionViewModel @Inject constructor(
     }
 
     // export all Transactions to csv file
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun exportTransactionsToCsv(csvFileUri: Uri) = viewModelScope.launch {
         _exportCsvState.value = ExportState.Loading
         transactionRepo
             .getAllTransactions()
-            .flowOn(Dispatchers.IO)
+            .flowOn(IO)
             .map { it.toCsv() }
             .flatMapMerge { exportService.writeToCSV(csvFileUri, it) }
             .catch { error ->
@@ -105,6 +116,22 @@ class TransactionViewModel @Inject constructor(
                 _detailState.value = ViewState.Success(result)
             } else {
                 _detailState.value = ViewState.Empty
+            }
+        }
+    }
+
+    // search transactions
+    fun searchTransactions(query: String) = viewModelScope.launch {
+        _searchQuery.value = query
+        if (query.isEmpty()) {
+            getAllTransaction(_transactionFilter.value)
+        } else {
+            transactionRepo.searchTransactions(query).collect { result ->
+                if (result.isNullOrEmpty()) {
+                    _uiState.value = ViewState.Empty
+                } else {
+                    _uiState.value = ViewState.Success(result)
+                }
             }
         }
     }

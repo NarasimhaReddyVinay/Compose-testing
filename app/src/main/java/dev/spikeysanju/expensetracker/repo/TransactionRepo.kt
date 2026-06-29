@@ -1,10 +1,15 @@
 package dev.spikeysanju.expensetracker.repo
 
 import dev.spikeysanju.expensetracker.data.local.AppDatabase
+import dev.spikeysanju.expensetracker.model.Budget
 import dev.spikeysanju.expensetracker.model.Transaction
 import javax.inject.Inject
 
 class TransactionRepo @Inject constructor(private val db: AppDatabase) {
+
+    // Budget operations
+    fun getBudget() = db.getBudgetDao().getBudget()
+    suspend fun setBudget(budget: Budget) = db.getBudgetDao().setBudget(budget)
 
     // insert transaction
     suspend fun insert(transaction: Transaction) = db.getTransactionDao().insertTransaction(
@@ -36,4 +41,11 @@ class TransactionRepo @Inject constructor(private val db: AppDatabase) {
 
     // delete transaction by ID
     suspend fun deleteByID(id: Int) = db.getTransactionDao().deleteTransactionByID(id)
+
+    // search transactions
+    fun searchTransactions(query: String) = db.getTransactionDao().searchTransactions(query)
+
+    // get transactions by date range
+    fun getTransactionsByDateRange(startDate: Long, endDate: Long) =
+        db.getTransactionDao().getTransactionsByDateRange(startDate, endDate)
 }
