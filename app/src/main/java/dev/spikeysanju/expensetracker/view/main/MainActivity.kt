@@ -13,6 +13,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import dev.spikeysanju.expensetracker.ui.screens.*
+import dev.spikeysanju.expensetracker.ui.screens.insight.InsightScreen
+import dev.spikeysanju.expensetracker.ui.screens.insight.InsightViewModel
 import dev.spikeysanju.expensetracker.ui.theme.ExpenseTrackerTheme
 import dev.spikeysanju.expensetracker.utils.BiometricUtils
 import dev.spikeysanju.expensetracker.view.main.viewmodel.TransactionViewModel
@@ -24,6 +26,7 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val viewModel: TransactionViewModel = viewModel()
+            val insightViewModel: InsightViewModel = viewModel()
             val isDarkMode by viewModel.getUIMode.collectAsState(initial = false)
             var isAuthenticated by remember { mutableStateOf(false) }
 
@@ -34,8 +37,6 @@ class MainActivity : FragmentActivity() {
                         onSuccess = { isAuthenticated = true },
                         onError = { error ->
                             Toast.makeText(this@MainActivity, error, Toast.LENGTH_SHORT).show()
-                            // For demo purposes, we'll let it pass if error occurs (e.g. no biometric set)
-                            // In a real app, you might want to force a PIN or close the app
                             isAuthenticated = true 
                         }
                     )
@@ -70,6 +71,9 @@ class MainActivity : FragmentActivity() {
                         }
                         composable("about") {
                             AboutScreen(navController)
+                        }
+                        composable("insights") {
+                            InsightScreen(navController, insightViewModel)
                         }
                     }
                 }

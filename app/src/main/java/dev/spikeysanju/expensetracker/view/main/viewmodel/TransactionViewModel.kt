@@ -6,27 +6,24 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.spikeysanju.expensetracker.data.local.datastore.UIModeImpl
+import dev.spikeysanju.expensetracker.domain.repository.BudgetRepository
+import dev.spikeysanju.expensetracker.domain.repository.TransactionRepository
 import dev.spikeysanju.expensetracker.model.Budget
 import dev.spikeysanju.expensetracker.model.Transaction
-import dev.spikeysanju.expensetracker.repo.TransactionRepo
 import dev.spikeysanju.expensetracker.services.exportcsv.ExportCsvService
 import dev.spikeysanju.expensetracker.services.exportcsv.toCsv
 import dev.spikeysanju.expensetracker.utils.viewState.ExportState
 import dev.spikeysanju.expensetracker.utils.viewState.ViewState
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flatMapMerge
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class TransactionViewModel @Inject constructor(
-    private val transactionRepo: TransactionRepo,
+    private val transactionRepository: TransactionRepository,
+    private val budgetRepository: BudgetRepository,
     private val exportService: ExportCsvService,
     private val uiModeDataStore: UIModeImpl
 ) : ViewModel() {
@@ -49,10 +46,10 @@ class TransactionViewModel @Inject constructor(
     val detailState: StateFlow<ViewState<Transaction>> = _detailState
 
     // Budget operations
-    val getBudget = transactionRepo.getBudget()
+    val getBudget = budgetRepository.getBudget()
 
     fun setBudget(amount: Double) = viewModelScope.launch {
-        transactionRepo.setBudget(Budget(amount = amount))
+        budgetRepository.setBudget(Budget(amount = amount))
     }
 
     // get ui mode
@@ -69,7 +66,7 @@ class TransactionViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     fun exportTransactionsToCsv(csvFileUri: Uri) = viewModelScope.launch {
         _exportCsvState.value = ExportState.Loading
-        transactionRepo
+        transactionRepository
             .getAllTransactions()
             .flowOn(IO)
             .map { it.toCsv() }
@@ -83,22 +80,22 @@ class TransactionViewModel @Inject constructor(
 
     // insert transaction
     fun insertTransaction(transaction: Transaction) = viewModelScope.launch {
-        transactionRepo.insert(transaction)
+        transactionRepository.insert(transaction)
     }
 
     // update transaction
     fun updateTransaction(transaction: Transaction) = viewModelScope.launch {
-        transactionRepo.update(transaction)
+        transactionRepository.update(transaction)
     }
 
     // delete transaction
     fun deleteTransaction(transaction: Transaction) = viewModelScope.launch {
-        transactionRepo.delete(transaction)
+        transactionRepository.delete(transaction)
     }
 
     // get all transaction
     fun getAllTransaction(type: String) = viewModelScope.launch {
-        transactionRepo.getAllSingleTransaction(type).collect { result ->
+        transactionRepository.getAllSingleTransaction(type).collect { result ->
             if (result.isNullOrEmpty()) {
                 _uiState.value = ViewState.Empty
             } else {
@@ -111,7 +108,7 @@ class TransactionViewModel @Inject constructor(
     // get transaction by id
     fun getByID(id: Int) = viewModelScope.launch {
         _detailState.value = ViewState.Loading
-        transactionRepo.getByID(id).collect { result: Transaction? ->
+        transactionRepository.getByID(id).collect { result: Transaction? ->
             if (result != null) {
                 _detailState.value = ViewState.Success(result)
             } else {
@@ -126,7 +123,7 @@ class TransactionViewModel @Inject constructor(
         if (query.isEmpty()) {
             getAllTransaction(_transactionFilter.value)
         } else {
-            transactionRepo.searchTransactions(query).collect { result ->
+            transactionRepository.searchTransactions(query).collect { result ->
                 if (result.isNullOrEmpty()) {
                     _uiState.value = ViewState.Empty
                 } else {
@@ -138,7 +135,7 @@ class TransactionViewModel @Inject constructor(
 
     // delete transaction
     fun deleteByID(id: Int) = viewModelScope.launch {
-        transactionRepo.deleteByID(id)
+        transactionRepository.deleteByID(id)
     }
 
     fun allIncome() {

@@ -32,6 +32,14 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun provideTransactionDao(database: AppDatabase) = database.getTransactionDao()
+
+    @Singleton
+    @Provides
+    fun provideBudgetDao(database: AppDatabase) = database.getBudgetDao()
+
+    @Singleton
+    @Provides
     fun provideExportCSV(@ApplicationContext context: Context): ExportCsvService {
         return ExportCsvService(appContext = context)
     }

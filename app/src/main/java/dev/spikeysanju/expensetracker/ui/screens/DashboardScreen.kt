@@ -7,12 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,6 +39,9 @@ fun DashboardScreen(navController: NavController, viewModel: TransactionViewMode
             TopAppBar(
                 title = { Text("Expense Tracker") },
                 actions = {
+                    IconButton(onClick = { navController.navigate("insights") }) {
+                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Insights")
+                    }
                     IconButton(onClick = { navController.navigate("about") }) {
                         Icon(Icons.Default.Info, contentDescription = "About")
                     }
