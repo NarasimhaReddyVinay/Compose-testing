@@ -133,7 +133,7 @@ dependencies {
     implementation("com.google.mlkit:text-recognition:16.0.0")
 
     // OpenCsv
-    implementation("com.opencsv:opencsv:5.3")
+    implementation("com.opencsv:opencsv:5.12.0")
 
     implementation(project(":domain"))
 
