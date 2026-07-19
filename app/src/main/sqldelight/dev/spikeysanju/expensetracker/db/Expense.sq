@@ -1,0 +1,22 @@
+CREATE TABLE transactionEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    amount REAL NOT NULL,
+    transactionType TEXT NOT NULL,
+    tag TEXT NOT NULL,
+    date TEXT NOT NULL,
+    note TEXT NOT NULL,
+    frequency TEXT NOT NULL DEFAULT 'Once',
+    currencyCode TEXT NOT NULL DEFAULT 'INR',
+    createdAt INTEGER NOT NULL
+);
+
+getAllTransactions:
+SELECT * FROM transactionEntity ORDER BY createdAt DESC;
+
+insertTransaction:
+INSERT OR REPLACE INTO transactionEntity(title, amount, transactionType, tag, date, note, frequency, currencyCode, createdAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteTransaction:
+DELETE FROM transactionEntity WHERE id = :id;

@@ -2,11 +2,11 @@ package dev.spikeysanju.expensetracker.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import dev.spikeysanju.expensetracker.model.Budget
-import dev.spikeysanju.expensetracker.model.Transaction
+import dev.spikeysanju.expensetracker.data.local.entity.BudgetEntity
+import dev.spikeysanju.expensetracker.data.local.entity.TransactionEntity
 
 @Database(
-    entities = [Transaction::class, Budget::class],
+    entities = [TransactionEntity::class, BudgetEntity::class],
     version = 2,
     exportSchema = false
 )

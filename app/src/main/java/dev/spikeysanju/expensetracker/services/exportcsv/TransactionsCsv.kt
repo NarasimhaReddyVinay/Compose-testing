@@ -1,7 +1,7 @@
 package dev.spikeysanju.expensetracker.services.exportcsv
 
 import com.opencsv.bean.CsvBindByName
-import dev.spikeysanju.expensetracker.model.Transaction
+import dev.spikeysanju.expensetracker.domain.model.Transaction
 
 data class TransactionsCSV(
     @CsvBindByName(column = "title")

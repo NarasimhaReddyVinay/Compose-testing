@@ -2,6 +2,7 @@ package dev.spikeysanju.expensetracker.domain.usecase
 
 import dev.spikeysanju.expensetracker.domain.model.BudgetStatus
 import dev.spikeysanju.expensetracker.domain.model.FinancialInsight
+import dev.spikeysanju.expensetracker.domain.model.Transaction
 import dev.spikeysanju.expensetracker.domain.repository.BudgetRepository
 import dev.spikeysanju.expensetracker.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.Flow

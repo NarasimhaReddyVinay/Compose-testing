@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import dev.spikeysanju.expensetracker.model.Transaction
+import dev.spikeysanju.expensetracker.domain.model.Transaction
 import dev.spikeysanju.expensetracker.utils.viewState.ViewState
 import dev.spikeysanju.expensetracker.view.dashboard.components.AnalyticsChart
 import dev.spikeysanju.expensetracker.view.dashboard.components.ChartData
@@ -54,69 +54,94 @@ fun DashboardScreen(navController: NavController, viewModel: TransactionViewMode
             }
         }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
-            // Search Bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { viewModel.searchTransactions(it) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                placeholder = { Text("Search transactions...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.searchTransactions("") }) {
-                            Icon(Icons.Default.Clear, contentDescription = "Clear")
-                        }
+        BoxWithConstraints(modifier = Modifier.padding(padding)) {
+            val isExpanded = maxWidth > 600.dp
+            
+            if (isExpanded) {
+                Row(modifier = Modifier.fillMaxSize()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        DashboardContent(uiState, viewModel, navController, searchQuery)
                     }
-                },
-                singleLine = true,
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
-            )
-
-            when (val state = uiState) {
-                is ViewState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-                is ViewState.Empty -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No transactions yet") }
-                is ViewState.Success -> {
-                    val transactions = state.data
-                    val (income, expense) = transactions.partition { it.transactionType == "Income" }
-                    val totalIncome = income.sumOf { it.amount }.toFloat()
-                    val totalExpense = expense.sumOf { it.amount }.toFloat()
-
-                    AnalyticsChart(
-                        data = listOf(
-                            ChartData(Color(0xFF4CAF50), totalIncome, "Income"),
-                            ChartData(Color(0xFFF44336), totalExpense, "Expense")
-                        ),
-                        modifier = Modifier.height(300.dp)
-                    )
-
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 80.dp)
-                    ) {
-                        items(
-                            items = transactions,
-                            key = { it.id }
-                        ) { transaction ->
-                            SwipeToActionItem(
-                                transaction = transaction,
-                                onDismissedToStart = {
-                                    viewModel.deleteTransaction(transaction)
-                                },
-                                onDismissedToEnd = {
-                                    navController.navigate("edit_transaction/${transaction.id}")
-                                },
-                                onClick = {
-                                    navController.navigate("details/${transaction.id}")
-                                }
-                            )
-                        }
+                    Box(modifier = Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                        Text("Tablet Dashboard View", style = MaterialTheme.typography.headlineMedium)
                     }
                 }
-                is ViewState.Error -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Error loading transactions") }
+            } else {
+                DashboardContent(uiState, viewModel, navController, searchQuery)
             }
+        }
+    }
+}
+
+@Composable
+fun DashboardContent(
+    uiState: ViewState<List<Transaction>>,
+    viewModel: TransactionViewModel,
+    navController: NavController,
+    searchQuery: String
+) {
+    Column {
+        // Search Bar
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { viewModel.searchTransactions(it) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            placeholder = { Text("Search transactions...") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = { viewModel.searchTransactions("") }) {
+                        Icon(Icons.Default.Clear, contentDescription = "Clear")
+                    }
+                }
+            },
+            singleLine = true,
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+        )
+
+        when (val state = uiState) {
+            is ViewState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            is ViewState.Empty -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No transactions yet") }
+            is ViewState.Success -> {
+                val transactions = state.data
+                val (income, expense) = transactions.partition { it.transactionType == "Income" }
+                val totalIncome = income.sumOf { it.amount }.toFloat()
+                val totalExpense = expense.sumOf { it.amount }.toFloat()
+
+                AnalyticsChart(
+                    data = listOf(
+                        ChartData(Color(0xFF4CAF50), totalIncome, "Income"),
+                        ChartData(Color(0xFFF44336), totalExpense, "Expense")
+                    ),
+                    modifier = Modifier.height(300.dp)
+                )
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    items(
+                        items = transactions,
+                        key = { it.id }
+                    ) { transaction ->
+                        SwipeToActionItem(
+                            transaction = transaction,
+                            onDismissedToStart = {
+                                viewModel.deleteTransaction(transaction)
+                            },
+                            onDismissedToEnd = {
+                                navController.navigate("edit_transaction/${transaction.id}")
+                            },
+                            onClick = {
+                                navController.navigate("details/${transaction.id}")
+                            }
+                        )
+                    }
+                }
+            }
+            is ViewState.Error -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Error loading transactions") }
         }
     }
 }

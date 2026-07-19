@@ -4,6 +4,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dev.spikeysanju.expensetracker.data.local.source.TransactionDataSource
+import dev.spikeysanju.expensetracker.data.local.source.TransactionLocalDataSourceImpl
 import dev.spikeysanju.expensetracker.data.repository.BudgetRepositoryImpl
 import dev.spikeysanju.expensetracker.data.repository.TransactionRepositoryImpl
 import dev.spikeysanju.expensetracker.domain.repository.BudgetRepository
@@ -13,6 +15,13 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
+
+    @Binds
+    @Singleton
+    @LocalDataSource
+    abstract fun bindTransactionLocalDataSource(
+        transactionLocalDataSourceImpl: TransactionLocalDataSourceImpl
+    ): TransactionDataSource
 
     @Binds
     @Singleton

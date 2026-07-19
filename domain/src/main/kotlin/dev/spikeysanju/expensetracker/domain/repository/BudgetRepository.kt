@@ -1,6 +1,6 @@
 package dev.spikeysanju.expensetracker.domain.repository
 
-import dev.spikeysanju.expensetracker.model.Budget
+import dev.spikeysanju.expensetracker.domain.model.Budget
 import kotlinx.coroutines.flow.Flow
 
 /**

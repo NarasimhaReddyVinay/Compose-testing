@@ -3,7 +3,7 @@ package dev.spikeysanju.expensetracker.ui.screens
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.compose.rememberNavController
-import dev.spikeysanju.expensetracker.model.Transaction
+import dev.spikeysanju.expensetracker.domain.model.Transaction
 import dev.spikeysanju.expensetracker.utils.viewState.ViewState
 import dev.spikeysanju.expensetracker.view.main.viewmodel.TransactionViewModel
 import io.mockk.every

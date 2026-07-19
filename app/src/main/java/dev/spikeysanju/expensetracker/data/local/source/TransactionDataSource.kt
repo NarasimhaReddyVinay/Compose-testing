@@ -1,9 +1,9 @@
-package dev.spikeysanju.expensetracker.domain.repository
+package dev.spikeysanju.expensetracker.data.local.source
 
-import dev.spikeysanju.expensetracker.model.Transaction
+import dev.spikeysanju.expensetracker.domain.model.Transaction
 import kotlinx.coroutines.flow.Flow
 
-interface TransactionRepository {
+interface TransactionDataSource {
     fun getAllTransactions(): Flow<List<Transaction>>
     fun getAllSingleTransaction(transactionType: String): Flow<List<Transaction>>
     fun getByID(id: Int): Flow<Transaction>

@@ -7,7 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import dev.spikeysanju.expensetracker.model.Transaction
+import dev.spikeysanju.expensetracker.domain.model.Transaction
 import dev.spikeysanju.expensetracker.utils.viewState.ViewState
 import dev.spikeysanju.expensetracker.view.add.components.AddTransactionForm
 import dev.spikeysanju.expensetracker.view.main.viewmodel.TransactionViewModel

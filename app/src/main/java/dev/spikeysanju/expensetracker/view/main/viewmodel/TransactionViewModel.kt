@@ -6,10 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.spikeysanju.expensetracker.data.local.datastore.UIModeImpl
+import dev.spikeysanju.expensetracker.domain.model.Budget
+import dev.spikeysanju.expensetracker.domain.model.Transaction
 import dev.spikeysanju.expensetracker.domain.repository.BudgetRepository
 import dev.spikeysanju.expensetracker.domain.repository.TransactionRepository
-import dev.spikeysanju.expensetracker.model.Budget
-import dev.spikeysanju.expensetracker.model.Transaction
+import dev.spikeysanju.expensetracker.domain.usecase.*
 import dev.spikeysanju.expensetracker.services.exportcsv.ExportCsvService
 import dev.spikeysanju.expensetracker.services.exportcsv.toCsv
 import dev.spikeysanju.expensetracker.utils.viewState.ExportState
@@ -24,6 +25,9 @@ import javax.inject.Inject
 class TransactionViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val budgetRepository: BudgetRepository,
+    private val getAllTransactionsUseCase: GetAllTransactionsUseCase,
+    private val addTransactionUseCase: AddTransactionUseCase,
+    private val searchTransactionsUseCase: SearchTransactionsUseCase,
     private val exportService: ExportCsvService,
     private val uiModeDataStore: UIModeImpl
 ) : ViewModel() {
@@ -80,7 +84,7 @@ class TransactionViewModel @Inject constructor(
 
     // insert transaction
     fun insertTransaction(transaction: Transaction) = viewModelScope.launch {
-        transactionRepository.insert(transaction)
+        addTransactionUseCase(transaction)
     }
 
     // update transaction
@@ -95,8 +99,8 @@ class TransactionViewModel @Inject constructor(
 
     // get all transaction
     fun getAllTransaction(type: String) = viewModelScope.launch {
-        transactionRepository.getAllSingleTransaction(type).collect { result ->
-            if (result.isNullOrEmpty()) {
+        getAllTransactionsUseCase(type).collect { result ->
+            if (result.isEmpty()) {
                 _uiState.value = ViewState.Empty
             } else {
                 _uiState.value = ViewState.Success(result)
@@ -123,8 +127,8 @@ class TransactionViewModel @Inject constructor(
         if (query.isEmpty()) {
             getAllTransaction(_transactionFilter.value)
         } else {
-            transactionRepository.searchTransactions(query).collect { result ->
-                if (result.isNullOrEmpty()) {
+            searchTransactionsUseCase(query).collect { result ->
+                if (result.isEmpty()) {
                     _uiState.value = ViewState.Empty
                 } else {
                     _uiState.value = ViewState.Success(result)
