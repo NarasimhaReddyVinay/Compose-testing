@@ -123,8 +123,8 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
     // SQLDelight
-    implementation("app.cash.sqldelight:android-driver:2.0.2")
-    implementation("app.cash.sqldelight:coroutines-extensions:2.0.2")
+    implementation("app.cash.sqldelight:android-driver:2.3.2")
+    implementation("app.cash.sqldelight:coroutines-extensions:2.3.2")
 
     // Biometric
     implementation("androidx.biometric:biometric:1.1.0")
