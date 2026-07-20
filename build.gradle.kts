@@ -11,7 +11,7 @@ buildscript {
         classpath("com.android.tools.build:gradle:8.13.2")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
         classpath("androidx.navigation:navigation-safe-args-gradle-plugin:2.9.8")
-        classpath("com.google.dagger:hilt-android-gradle-plugin:2.50")
+        classpath("com.google.dagger:hilt-android-gradle-plugin:2.60.1")
         classpath("app.cash.sqldelight:gradle-plugin:2.0.2")
     }
 }
