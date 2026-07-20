@@ -130,7 +130,7 @@ dependencies {
     implementation("androidx.biometric:biometric:1.1.0")
 
     // ML Kit - Text Recognition
-    implementation("com.google.mlkit:text-recognition:16.0.0")
+    implementation("com.google.mlkit:text-recognition:16.0.1")
 
     // OpenCsv
     implementation("com.opencsv:opencsv:5.12.0")
