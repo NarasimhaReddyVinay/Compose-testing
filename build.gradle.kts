@@ -12,7 +12,7 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
         classpath("androidx.navigation:navigation-safe-args-gradle-plugin:2.9.8")
         classpath("com.google.dagger:hilt-android-gradle-plugin:2.50")
-        classpath("app.cash.sqldelight:gradle-plugin:2.0.2")
+        classpath("app.cash.sqldelight:gradle-plugin:2.3.2")
     }
 }
 
